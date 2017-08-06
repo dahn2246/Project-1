@@ -1,4 +1,5 @@
 import time
+import gzip
 from bs4 import BeautifulSoup
 from urllib import request
 
@@ -43,32 +44,33 @@ def getTodaysPrice(tickerName):
         tempWebFile = request.urlopen(url1).read()
         tempData = BeautifulSoup(tempWebFile, "lxml")
         html = tempData.prettify()
+        lines = tempData.find_all('meta')
+     
+        payload = ''
+        price = ''
+        for i in lines:
+            marker = 'meta content="'
+            line = str(i)
+            index0 = line.find(marker)
+     
+            if(index0 != None):
+                payload = line[index0 + len(marker):]
+    #             print(payload)
+                 
+                index2 = payload.find('"')
+                 
+                price = payload[:index2]
+                price = price.replace(',','')
+                 
+                try:
+                    todaysPrice = float(price)
+                    return todaysPrice
+                except:
+                    pass
     except:
         pass
     
-    lines = tempData.find_all('meta')
-     
-    payload = ''
-    price = ''
-    for i in lines:
-        marker = 'meta content="'
-        line = str(i)
-        index0 = line.find(marker)
- 
-        if(index0 != None):
-            payload = line[index0 + len(marker):]
-#             print(payload)
-             
-            index2 = payload.find('"')
-             
-            price = payload[:index2]
-            price = price.replace(',','')
-             
-            try:
-                todaysPrice = float(price)
-                return todaysPrice
-            except:
-                pass
+
             
     """If doesn't work, try Yahoo finance"""
     try:
@@ -104,6 +106,7 @@ def getTodaysPrice(tickerName):
                 pass
     return -1
 
+# print(getTodaysPrice('AAL'))
 '''-------------------------------------------------------
 
 Checks to see if two arrays are very similar
@@ -214,6 +217,76 @@ def similarity(str1,str2):
     return False
 
 
+"""---------------------------------------------------------
+
+With an array in the form 
+
+''   WMT   TGT   
+PE ...
+PB ...
+
+Will make a table to format data.  
+
+
+---------------------------------------------------------"""
+def makeTable(data):
+    tempData = data
+    data = []
+    """Transpose Data """
+    for i in range(0, len(tempData[0])):
+        tempArr = []
+        for j in range(0,len(tempData)):
+            tempArr.append(tempData[j][i])
+        data.append(tempArr)
+        
+    
+    columnLength = []
+     
+    for i in range(0,len(data[0])):
+        longestLength = 0
+        for j in range(0,len(data)):
+            if(len(data[j][i]) > longestLength):
+                longestLength = len(data[j][i])
+        longestLength += 5
+        columnLength.append(longestLength)
+
+         
+
+    for i in data:
+        formatText = ""
+        count = 0
+
+        for j in range(0, len(i)):
+            colLength = columnLength[count] 
+            count += 1
+            formatText += i[j].ljust(colLength)
+        print(formatText)
+         
+    
+"""---------------------------------------------------------
+
+remove Tags
+
+Ex: <div>Hello</div>
+returns Hello
+
+---------------------------------------------------------"""
+def removeTags(string):
+    firstTag = string.find('>')
+    if(firstTag < 0):
+        return None
+    
+    string = string[firstTag + 1:]
+    
+    secondTag = string.find('<')
+    if(secondTag < 0):
+        return None
+    
+    string = string[:secondTag]
+    
+    return string
+    
+# print(removeTags("<div>Hello</div>"))
 
 '''---------Testing -----------'''
 

@@ -11,6 +11,10 @@ class Variables:
         pass
     
     preDirectory = str(os.getcwd()) + "\\"
+    keyword = 'Dow30\\'
+    length = preDirectory.find(keyword)  + len(keyword)
+    preDirectory = preDirectory[0:length]
+    
     
     directory = preDirectory + "ExcelData\\"
     
